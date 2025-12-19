@@ -1,7 +1,7 @@
 import Adw from 'gi://Adw';
 import Gtk from 'gi://Gtk';
 
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class GitLabIssuesPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -13,14 +13,14 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
 
         // Create a preferences group
         const group = new Adw.PreferencesGroup({
-            title: 'Configuration GitLab',
-            description: 'Configurez votre serveur GitLab et votre token d\'accès',
+            title: _('GitLab Configuration'),
+            description: _('Configure your GitLab server and access token'),
         });
         page.add(group);
 
         // GitLab URL setting
         const urlRow = new Adw.EntryRow({
-            title: 'URL du serveur GitLab',
+            title: _('GitLab Server URL'),
         });
         urlRow.set_text(settings.get_string('gitlab-url'));
         urlRow.connect('changed', (widget) => {
@@ -30,7 +30,7 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
 
         // GitLab Token setting
         const tokenRow = new Adw.PasswordEntryRow({
-            title: 'Token d\'accès',
+            title: _('Access Token'),
         });
         tokenRow.set_text(settings.get_string('gitlab-token'));
         tokenRow.connect('changed', (widget) => {
@@ -40,14 +40,14 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
 
         // Reports configuration group
         const reportsGroup = new Adw.PreferencesGroup({
-            title: 'Configuration des rapports',
-            description: 'Configurez les filtres pour les rapports mensuels',
+            title: _('Reports Configuration'),
+            description: _('Configure filters for monthly reports'),
         });
         page.add(reportsGroup);
 
         // Report tags filter setting
         const tagsFilterRow = new Adw.EntryRow({
-            title: 'Tags inclus dans les rapports',
+            title: _('Tags included in reports'),
         });
         tagsFilterRow.set_text(settings.get_string('report-tags-filter'));
         tagsFilterRow.connect('changed', (widget) => {
@@ -57,13 +57,13 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
 
         // Help text for tags filter
         const tagsInfoLabel = new Gtk.Label({
-            label: 'Laissez vide pour afficher tous les tags.\n' +
-                   'Sinon, entrez une liste de tags séparés par des virgules ou des expressions régulières.\n' +
-                   'Exemples:\n' +
-                   '  • "Maintenance corrective,Maintenance préventive"\n' +
-                   '  • "^Maintenance.*$" (tous les tags commençant par "Maintenance")\n' +
+            label: _('Leave empty to display all tags.\n' +
+                   'Otherwise, enter a comma-separated list of tags or regular expressions.\n' +
+                   'Examples:\n' +
+                   '  • "Corrective Maintenance,Preventive Maintenance"\n' +
+                   '  • "^Maintenance.*$" (all tags starting with "Maintenance")\n' +
                    '  • "Bug,^Feature.*$"\n' +
-                   '\nLes issues sans ces tags apparaîtront comme "Autre" dans les rapports.',
+                   '\nIssues without these tags will appear as "Other" in reports.'),
             wrap: true,
             xalign: 0,
         });
@@ -75,16 +75,16 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
 
         // Information group
         const infoGroup = new Adw.PreferencesGroup({
-            title: 'Informations',
+            title: _('Information'),
         });
         page.add(infoGroup);
 
         const infoLabel = new Gtk.Label({
-            label: 'Pour créer un token d\'accès personnel:\n' +
-                   '1. Allez dans votre profil GitLab\n' +
-                   '2. Paramètres → Tokens d\'accès\n' +
-                   '3. Créez un nouveau token avec les permissions "api"\n' +
-                   '4. Copiez le token et collez-le ci-dessus',
+            label: _('To create a personal access token:\n' +
+                   '1. Go to your GitLab profile\n' +
+                   '2. Settings → Access Tokens\n' +
+                   '3. Create a new token with "api" permissions\n' +
+                   '4. Copy the token and paste it above'),
             wrap: true,
             xalign: 0,
         });

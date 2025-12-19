@@ -1,14 +1,15 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the gitlab-time-tracker@gecka.nc package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gitlab-time-tracker@gecka.nc\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-16 12:00+0000\n"
+"Project-Id-Version: gitlab-time-tracker@gecka.nc v1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Gecka-Apps/gitlab-time-tracker/"
+"issues\n"
+"POT-Creation-Date: 2025-12-19 12:01+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,203 +18,338 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: extension.js:56 extension.js:166 extension.js:197 extension.js:228
+#: extension.js:270 extension.js:341
 msgid "GitLab Issues Timer"
 msgstr ""
 
+#: extension.js:56
 msgid "Please configure the server URL and token in preferences"
 msgstr ""
 
+#: extension.js:64
 msgid "Select project & issue"
 msgstr ""
 
+#: extension.js:71
 msgid "Project: None"
 msgstr ""
 
+#: extension.js:74
 msgid "Issue: None"
 msgstr ""
 
-msgid "Start"
-msgstr ""
-
-msgid "Pause"
-msgstr ""
-
-msgid "Stop & Send"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Settings"
-msgstr ""
-
-msgid "Project"
-msgstr ""
-
-msgid "Issue"
-msgstr ""
-
-msgid "Error"
-msgstr ""
-
-msgid "Unable to open selector"
-msgstr ""
-
-msgid "Please select a project and an issue"
-msgstr ""
-
-msgid "Resume"
-msgstr ""
-
-msgid "Timer cancelled"
-msgstr ""
-
-msgid "Time sent"
-msgstr ""
-
-msgid "on issue"
-msgstr ""
-
-msgid "Unable to send time"
-msgstr ""
-
-msgid "Error sending time"
-msgstr ""
-
-msgid "Extension not found"
-msgstr ""
-
-msgid "Unable to open preferences"
-msgstr ""
-
+#: extension.js:78
 msgid "Open project in browser"
 msgstr ""
 
+#: extension.js:83
 msgid "Open issue in browser"
 msgstr ""
 
-msgid "No project selected"
+#: extension.js:98
+msgid "Start"
 msgstr ""
 
-msgid "No issue selected"
+#: extension.js:102 extension.js:250
+msgid "Pause"
 msgstr ""
 
-msgid "Unable to open browser"
+#: extension.js:107
+msgid "Stop & Send"
 msgstr ""
 
-msgid "Select a project and an issue"
+#: extension.js:112 issueSelector.js:137
+msgid "Cancel"
 msgstr ""
 
-msgid "Search project..."
-msgstr ""
-
-msgid "Search issue..."
-msgstr ""
-
-msgid "Loading..."
-msgstr ""
-
-msgid "Select"
-msgstr ""
-
-msgid "GitLab Time Tracking"
-msgstr ""
-
+#: extension.js:120
 msgid "Monthly Report"
 msgstr ""
 
-msgid "Monthly Time Report"
+#: extension.js:127
+msgid "Settings"
 msgstr ""
 
-msgid "Select a project..."
+#: extension.js:146 issueSelector.js:52 reportDialog.js:62 reportDialog.js:816
+msgid "Project"
 msgstr ""
 
-msgid "January"
+#: extension.js:147 issueSelector.js:92
+msgid "Issue"
 msgstr ""
 
-msgid "February"
+#: extension.js:160 extension.js:174 extension.js:190 extension.js:205
+#: extension.js:221 extension.js:343 extension.js:346 extension.js:367
+#: extension.js:378 extension.js:382 reportDialog.js:300 reportDialog.js:303
+#: reportDialog.js:632 reportDialog.js:636 reportDialog.js:908
+#: reportDialog.js:953
+msgid "Error"
 msgstr ""
 
-msgid "March"
+#: extension.js:160
+msgid "Unable to open selector"
 msgstr ""
 
-msgid "April"
+#: extension.js:166
+msgid "No project selected"
 msgstr ""
 
-msgid "May"
+#: extension.js:174
+msgid "Project URL not available"
 msgstr ""
 
-msgid "June"
+#: extension.js:190 extension.js:221
+msgid "Unable to open browser"
 msgstr ""
 
-msgid "July"
+#: extension.js:197
+msgid "No issue selected"
 msgstr ""
 
-msgid "August"
+#: extension.js:205
+msgid "Issue URL not available"
 msgstr ""
 
-msgid "September"
+#: extension.js:228 issueSelector.js:372
+msgid "Please select a project and an issue"
 msgstr ""
 
-msgid "October"
+#: extension.js:253
+msgid "Resume"
 msgstr ""
 
-msgid "November"
+#: extension.js:270
+msgid "Timer cancelled"
 msgstr ""
 
-msgid "December"
+#: extension.js:341
+msgid "Time sent"
 msgstr ""
 
-msgid "Export Markdown"
+#: extension.js:341
+msgid "on issue"
 msgstr ""
 
-msgid "Export CSV"
+#: extension.js:343
+msgid "Unable to send time"
 msgstr ""
 
-msgid "Close"
+#: extension.js:346
+msgid "Error sending time"
 msgstr ""
 
-msgid "Total time"
-msgstr ""
-
-msgid "Issues"
-msgstr ""
-
-msgid "Categories"
-msgstr ""
-
-msgid "No time tracked for this period"
-msgstr ""
-
-msgid "No projects available"
-msgstr ""
-
-msgid "Unable to load projects"
-msgstr ""
-
-msgid "Error loading projects"
-msgstr ""
-
-msgid "Unable to load report"
-msgstr ""
-
-msgid "Error loading report"
-msgstr ""
-
-msgid "No data to export"
-msgstr ""
-
-msgid "Report exported"
-msgstr ""
-
-msgid "Unable to export"
-msgstr ""
-
+#: extension.js:367
 msgid "Unable to open report"
 msgstr ""
 
+#: extension.js:378
+msgid "Extension not found"
+msgstr ""
+
+#: extension.js:382
+msgid "Unable to open preferences"
+msgstr ""
+
+#: issueSelector.js:39
+msgid "Select a project and an issue"
+msgstr ""
+
+#: issueSelector.js:59 reportDialog.js:110
+msgid "Search project..."
+msgstr ""
+
+#: issueSelector.js:99
+msgid "Search issue..."
+msgstr ""
+
+#: issueSelector.js:127 reportDialog.js:208
+msgid "Loading..."
+msgstr ""
+
+#: issueSelector.js:142
+msgid "Select"
+msgstr ""
+
+#: issueSelector.js:372 reportDialog.js:807 reportDialog.js:906
+#: reportDialog.js:915 reportDialog.js:951
+msgid "GitLab Time Tracking"
+msgstr ""
+
+#: reportDialog.js:44 reportDialog.js:815
+msgid "Monthly Time Report"
+msgstr ""
+
+#: reportDialog.js:87
+msgid "Select a project..."
+msgstr ""
+
+#: reportDialog.js:199 reportDialog.js:794 reportDialog.js:802
+#: reportDialog.js:818
+msgid "Total time"
+msgstr ""
+
+#: reportDialog.js:219
+msgid "Export Markdown"
+msgstr ""
+
+#: reportDialog.js:223
+msgid "Export CSV"
+msgstr ""
+
+#: reportDialog.js:227
+msgid "Close"
+msgstr ""
+
+#: reportDialog.js:238
+msgid "January"
+msgstr ""
+
+#: reportDialog.js:238
+msgid "February"
+msgstr ""
+
+#: reportDialog.js:238
+msgid "March"
+msgstr ""
+
+#: reportDialog.js:239
+msgid "April"
+msgstr ""
+
+#: reportDialog.js:239
+msgid "May"
+msgstr ""
+
+#: reportDialog.js:239
+msgid "June"
+msgstr ""
+
+#: reportDialog.js:240
+msgid "July"
+msgstr ""
+
+#: reportDialog.js:240
+msgid "August"
+msgstr ""
+
+#: reportDialog.js:240
+msgid "September"
+msgstr ""
+
+#: reportDialog.js:241
+msgid "October"
+msgstr ""
+
+#: reportDialog.js:241
+msgid "November"
+msgstr ""
+
+#: reportDialog.js:241
+msgid "December"
+msgstr ""
+
+#: reportDialog.js:300
+msgid "Unable to load projects"
+msgstr ""
+
+#: reportDialog.js:303
+msgid "Error loading projects"
+msgstr ""
+
+#: reportDialog.js:385
+msgid "No projects available"
+msgstr ""
+
+#: reportDialog.js:632
+msgid "Unable to load report"
+msgstr ""
+
+#: reportDialog.js:636
+msgid "Error loading report"
+msgstr ""
+
+#: reportDialog.js:670 reportDialog.js:851
 msgid "Other"
 msgstr ""
 
+#: reportDialog.js:670 reportDialog.js:851
 msgid "No label"
+msgstr ""
+
+#: reportDialog.js:743
+msgid "No time tracked for this period"
+msgstr ""
+
+#: reportDialog.js:802
+msgid "Issues"
+msgstr ""
+
+#: reportDialog.js:802
+msgid "Categories"
+msgstr ""
+
+#: reportDialog.js:807 reportDialog.js:915
+msgid "No data to export"
+msgstr ""
+
+#: reportDialog.js:906 reportDialog.js:951
+msgid "Report exported"
+msgstr ""
+
+#: reportDialog.js:908 reportDialog.js:953
+msgid "Unable to export"
+msgstr ""
+
+#: prefs.js:16
+msgid "GitLab Configuration"
+msgstr ""
+
+#: prefs.js:17
+msgid "Configure your GitLab server and access token"
+msgstr ""
+
+#: prefs.js:23
+msgid "GitLab Server URL"
+msgstr ""
+
+#: prefs.js:33
+msgid "Access Token"
+msgstr ""
+
+#: prefs.js:43
+msgid "Reports Configuration"
+msgstr ""
+
+#: prefs.js:44
+msgid "Configure filters for monthly reports"
+msgstr ""
+
+#: prefs.js:50
+msgid "Tags included in reports"
+msgstr ""
+
+#: prefs.js:60
+msgid ""
+"Leave empty to display all tags.\n"
+"Otherwise, enter a comma-separated list of tags or regular expressions.\n"
+"Examples:\n"
+"  • \"Corrective Maintenance,Preventive Maintenance\"\n"
+"  • \"^Maintenance.*$\" (all tags starting with \"Maintenance\")\n"
+"  • \"Bug,^Feature.*$\"\n"
+"\n"
+"Issues without these tags will appear as \"Other\" in reports."
+msgstr ""
+
+#: prefs.js:78
+msgid "Information"
+msgstr ""
+
+#: prefs.js:83
+msgid ""
+"To create a personal access token:\n"
+"1. Go to your GitLab profile\n"
+"2. Settings → Access Tokens\n"
+"3. Create a new token with \"api\" permissions\n"
+"4. Copy the token and paste it above"
 msgstr ""
