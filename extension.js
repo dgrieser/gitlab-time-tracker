@@ -44,7 +44,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
 
         // Restore timer state if any (after menu is built)
         this._restoreTimerState();
-        if (this._timerRunning) {
+        if (this._timerRunning || this._selectedProject) {
             this._updateUIAfterRestore();
         }
     }
@@ -156,6 +156,9 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
                 // Show the browser open buttons
                 this._openProjectButton.visible = true;
                 this._openIssueButton.visible = true;
+
+                // Save state immediately for session persistence
+                this._saveTimerState();
             });
 
             log('GitLab Timer: Opening dialog...');
@@ -244,12 +247,17 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
             if (!this._timerPaused) {
                 this._elapsedSeconds++;
                 this._updateTimerDisplay();
+                // Save state every 5 seconds for crash/session end recovery
+                if (this._elapsedSeconds % 5 === 0) {
+                    this._saveTimerState();
+                }
             }
             return GLib.SOURCE_CONTINUE;
         });
 
         this._updateButtonVisibility();
         this._updateIcon();
+        this._saveTimerState();
     }
 
     _pauseTimer() {
@@ -261,6 +269,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
             this._pauseButton.label.text = this._('Resume');
         }
         this._updateIcon();
+        this._saveTimerState();
     }
 
     _stopTimer() {
@@ -290,6 +299,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
         this._updateTimerDisplay();
         this._updateButtonVisibility();
         this._updateIcon();
+        this._saveTimerState();
     }
 
     _updateTimerDisplay() {
@@ -394,29 +404,45 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
     }
 
     _saveTimerState() {
+        // Build project object if selected
+        const projectData = this._selectedProject ? {
+            id: this._selectedProject.id,
+            path_with_namespace: this._selectedProject.path_with_namespace,
+            name: this._selectedProject.name,
+            avatar_url: this._selectedProject.avatar_url || null,
+            web_url: this._selectedProject.web_url || null
+        } : null;
+
+        // Build issue object if selected
+        const issueData = this._selectedIssue ? {
+            id: this._selectedIssue.id,
+            iid: this._selectedIssue.iid,
+            title: this._selectedIssue.title,
+            project_id: this._selectedIssue.project_id,
+            web_url: this._selectedIssue.web_url || null
+        } : null;
+
         if (this._timerRunning) {
             const state = {
                 running: this._timerRunning,
                 paused: this._timerPaused,
                 startTimestamp: this._timerStartTimestamp,
-                elapsedBeforePause: this._timerPaused ? this._elapsedSeconds : 0,
-                project: this._selectedProject ? {
-                    id: this._selectedProject.id,
-                    path_with_namespace: this._selectedProject.path_with_namespace,
-                    name: this._selectedProject.name,
-                    avatar_url: this._selectedProject.avatar_url || null,
-                    web_url: this._selectedProject.web_url || null
-                } : null,
-                issue: this._selectedIssue ? {
-                    id: this._selectedIssue.id,
-                    iid: this._selectedIssue.iid,
-                    title: this._selectedIssue.title,
-                    project_id: this._selectedIssue.project_id,
-                    web_url: this._selectedIssue.web_url || null
-                } : null
+                elapsedSeconds: this._elapsedSeconds,
+                project: projectData,
+                issue: issueData
             };
             this._settings.set_string('timer-state', JSON.stringify(state));
-            log('GitLab Timer: Saved timer state');
+            log(`GitLab Timer: Saved timer state (paused: ${this._timerPaused}, elapsed: ${this._elapsedSeconds})`);
+        } else if (projectData) {
+            // Even if timer is not running, save the selected project for session persistence
+            const state = {
+                running: false,
+                paused: false,
+                project: projectData,
+                issue: issueData
+            };
+            this._settings.set_string('timer-state', JSON.stringify(state));
+            log('GitLab Timer: Saved project state (timer not running)');
         } else {
             this._settings.set_string('timer-state', '{}');
         }
@@ -428,23 +454,47 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
             if (!stateJson || stateJson === '{}') return;
 
             const state = JSON.parse(stateJson);
-            if (!state.running) return;
 
             log('GitLab Timer: Restoring timer state...');
 
+            // Restore project and issue selection
             this._selectedProject = state.project;
             this._selectedIssue = state.issue;
-            this._timerPaused = state.paused;
+
+            // If timer was not running, just restore project/issue selection
+            if (!state.running) {
+                log('GitLab Timer: Restored project selection (timer was not running)');
+                this._settings.set_string('timer-state', '{}');
+                return;
+            }
+
             this._timerRunning = true;
             this._timerStartTimestamp = state.startTimestamp;
 
-            if (state.paused) {
-                // If paused, restore the elapsed seconds directly
-                this._elapsedSeconds = state.elapsedBeforePause;
+            // Check settings
+            const resumeOnUnlock = this._settings.get_boolean('resume-on-unlock');
+            const countTimeWhenLocked = this._settings.get_boolean('count-time-when-locked');
+
+            // Handle restore based on settings
+            if (resumeOnUnlock) {
+                // Option 1: Resume automatically
+                this._timerPaused = false;
+
+                if (countTimeWhenLocked) {
+                    // Count time elapsed since timer was started
+                    const now = Math.floor(Date.now() / 1000);
+                    this._elapsedSeconds = now - state.startTimestamp;
+                    log(`GitLab Timer: Timer resumed with calculated time: ${this._elapsedSeconds} seconds`);
+                } else {
+                    // Use saved elapsed time (don't count time during lock/shutdown)
+                    this._elapsedSeconds = state.elapsedSeconds;
+                    log(`GitLab Timer: Timer resumed with saved time: ${this._elapsedSeconds} seconds`);
+                }
             } else {
-                // If running, calculate elapsed time since start
-                const now = Math.floor(Date.now() / 1000);
-                this._elapsedSeconds = now - state.startTimestamp;
+                // Default: restore in paused state with saved time
+                this._timerPaused = true;
+                this._elapsedSeconds = state.elapsedSeconds;
+                log('GitLab Timer: Timer restored in paused state');
             }
 
             // Restart the timer interval
@@ -459,7 +509,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
             // Clear saved state after successful restore
             this._settings.set_string('timer-state', '{}');
 
-            log(`GitLab Timer: Timer restored with ${this._elapsedSeconds} seconds`);
+            log(`GitLab Timer: Timer restored with ${this._elapsedSeconds} seconds (paused: ${this._timerPaused})`);
         } catch (e) {
             log(`GitLab Timer: Error restoring timer state: ${e.message}`);
             this._settings.set_string('timer-state', '{}');
@@ -477,15 +527,26 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
         if (this._timerPaused) {
             this._pauseButton.label.text = this._('Resume');
         }
+        // Update project label
+        if (this._selectedProject) {
+            this._projectLabel.label.text = `${this._('Project')}: ${this._selectedProject.path_with_namespace}`;
+            this._openProjectButton.visible = true;
+        }
         // Update issue label
         if (this._selectedIssue) {
             this._issueLabel.label.text = `#${this._selectedIssue.iid} - ${this._selectedIssue.title}`;
+            this._openIssueButton.visible = true;
         }
     }
 
     destroy() {
+        log('GitLab Timer: destroy() called');
+
         // Save timer state before destroying
         this._saveTimerState();
+
+        // Force GSettings to sync to disk (important for session end)
+        Gio.Settings.sync();
 
         if (this._timerId) {
             GLib.source_remove(this._timerId);

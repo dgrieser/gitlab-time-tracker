@@ -21,5 +21,15 @@
       <summary>Timer State</summary>
       <description>JSON string containing the current timer state (for persistence across lock screen)</description>
     </key>
+    <key name="resume-on-unlock" type="b">
+      <default>false</default>
+      <summary>Resume timer when screen is unlocked</summary>
+      <description>When enabled, the timer will automatically resume when the screen is unlocked</description>
+    </key>
+    <key name="count-time-when-locked" type="b">
+      <default>false</default>
+      <summary>Count elapsed time when locked</summary>
+      <description>When enabled (and resume-on-unlock is enabled), the elapsed time during lock/logout/shutdown will be counted</description>
+    </key>
   </schema>
 </schemalist>

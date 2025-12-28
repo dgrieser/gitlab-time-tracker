@@ -38,6 +38,41 @@ export default class GitLabIssuesPreferences extends ExtensionPreferences {
         });
         group.add(tokenRow);
 
+        // Timer configuration group
+        const timerGroup = new Adw.PreferencesGroup({
+            title: _('Timer Configuration'),
+            description: _('Configure timer behavior after screen lock, logout or restart'),
+        });
+        page.add(timerGroup);
+
+        // Resume on unlock setting
+        const resumeOnUnlockRow = new Adw.SwitchRow({
+            title: _('Resume automatically after unlock'),
+            subtitle: _('Automatically resume the timer when the screen is unlocked'),
+        });
+        resumeOnUnlockRow.set_active(settings.get_boolean('resume-on-unlock'));
+        timerGroup.add(resumeOnUnlockRow);
+
+        // Count time when locked setting
+        const countTimeWhenLockedRow = new Adw.SwitchRow({
+            title: _('Count elapsed time when locked'),
+            subtitle: _('Count time elapsed during lock, logout or shutdown'),
+        });
+        countTimeWhenLockedRow.set_active(settings.get_boolean('count-time-when-locked'));
+        countTimeWhenLockedRow.set_sensitive(settings.get_boolean('resume-on-unlock'));
+        timerGroup.add(countTimeWhenLockedRow);
+
+        // Connect signals for interdependency
+        resumeOnUnlockRow.connect('notify::active', (widget) => {
+            const isActive = widget.get_active();
+            settings.set_boolean('resume-on-unlock', isActive);
+            countTimeWhenLockedRow.set_sensitive(isActive);
+        });
+
+        countTimeWhenLockedRow.connect('notify::active', (widget) => {
+            settings.set_boolean('count-time-when-locked', widget.get_active());
+        });
+
         // Reports configuration group
         const reportsGroup = new Adw.PreferencesGroup({
             title: _('Reports Configuration'),

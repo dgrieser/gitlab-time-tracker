@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: gitlab-time-tracker@gecka.nc\n"
 "Report-Msgid-Bugs-To: https://github.com/Gecka-Apps/gitlab-time-tracker/"
 "issues\n"
-"POT-Creation-Date: 2025-12-19 13:19+1100\n"
+"POT-Creation-Date: 2025-12-28 21:23+1100\n"
 "PO-Revision-Date: 2025-01-16 12:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
@@ -17,138 +17,139 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: extension.js:56 extension.js:166 extension.js:197 extension.js:228
-#: extension.js:270 extension.js:341
+#: extension.js:63 extension.js:176 extension.js:207 extension.js:238
+#: extension.js:287 extension.js:359
 msgid "GitLab Issues Timer"
 msgstr "GitLab Issues Timer"
 
-#: extension.js:56
+#: extension.js:63
 msgid "Please configure the server URL and token in preferences"
 msgstr ""
 "Bitte konfigurieren Sie die Server-URL und das Token in den Einstellungen"
 
-#: extension.js:64
+#: extension.js:71
 msgid "Select project & issue"
 msgstr "Projekt & Issue auswählen"
 
-#: extension.js:71
+#: extension.js:78
 msgid "Project: None"
 msgstr "Projekt: Keins"
 
-#: extension.js:74
+#: extension.js:81
 msgid "Issue: None"
 msgstr "Issue: Keine"
 
-#: extension.js:78
+#: extension.js:85
 msgid "Open project in browser"
 msgstr "Projekt im Browser öffnen"
 
-#: extension.js:83
+#: extension.js:90
 msgid "Open issue in browser"
 msgstr "Issue im Browser öffnen"
 
-#: extension.js:98
+#: extension.js:105
 msgid "Start"
 msgstr "Starten"
 
-#: extension.js:102 extension.js:250
+#: extension.js:109 extension.js:266
 msgid "Pause"
 msgstr "Pausieren"
 
-#: extension.js:107
+#: extension.js:114
 msgid "Stop & Send"
 msgstr "Stoppen & Senden"
 
-#: extension.js:112 issueSelector.js:137
+#: extension.js:119 issueSelector.js:137
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: extension.js:120
+#: extension.js:127
 msgid "Monthly Report"
 msgstr "Monatsbericht"
 
-#: extension.js:127
+#: extension.js:134
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: extension.js:146 issueSelector.js:52 reportDialog.js:63 reportDialog.js:820
+#: extension.js:153 extension.js:532 issueSelector.js:52 reportDialog.js:63
+#: reportDialog.js:820
 msgid "Project"
 msgstr "Projekt"
 
-#: extension.js:147 issueSelector.js:92
+#: extension.js:154 issueSelector.js:92
 msgid "Issue"
 msgstr "Issue"
 
-#: extension.js:160 extension.js:174 extension.js:190 extension.js:205
-#: extension.js:221 extension.js:343 extension.js:346 extension.js:367
-#: extension.js:378 extension.js:382 reportDialog.js:301 reportDialog.js:304
+#: extension.js:170 extension.js:184 extension.js:200 extension.js:215
+#: extension.js:231 extension.js:361 extension.js:364 extension.js:385
+#: extension.js:396 extension.js:400 reportDialog.js:301 reportDialog.js:304
 #: reportDialog.js:636 reportDialog.js:640 reportDialog.js:912
 #: reportDialog.js:957
 msgid "Error"
 msgstr "Fehler"
 
-#: extension.js:160
+#: extension.js:170
 msgid "Unable to open selector"
 msgstr "Auswahl kann nicht geöffnet werden"
 
-#: extension.js:166
+#: extension.js:176
 msgid "No project selected"
 msgstr "Kein Projekt ausgewählt"
 
-#: extension.js:174
+#: extension.js:184
 #, fuzzy
 msgid "Project URL not available"
 msgstr "Keine Projekte verfügbar"
 
-#: extension.js:190 extension.js:221
+#: extension.js:200 extension.js:231
 msgid "Unable to open browser"
 msgstr "Browser kann nicht geöffnet werden"
 
-#: extension.js:197
+#: extension.js:207
 msgid "No issue selected"
 msgstr "Keine Issue ausgewählt"
 
-#: extension.js:205
+#: extension.js:215
 msgid "Issue URL not available"
-msgstr ""
+msgstr "Issue-URL nicht verfügbar"
 
-#: extension.js:228 issueSelector.js:372
+#: extension.js:238 issueSelector.js:372
 msgid "Please select a project and an issue"
 msgstr "Bitte wählen Sie ein Projekt und eine Issue aus"
 
-#: extension.js:253
+#: extension.js:269 extension.js:528
 msgid "Resume"
 msgstr "Fortsetzen"
 
-#: extension.js:270
+#: extension.js:287
 msgid "Timer cancelled"
 msgstr "Timer abgebrochen"
 
-#: extension.js:341
+#: extension.js:359
 msgid "Time sent"
 msgstr "Zeit gesendet"
 
-#: extension.js:341
+#: extension.js:359
 msgid "on issue"
 msgstr "auf Issue"
 
-#: extension.js:343
+#: extension.js:361
 msgid "Unable to send time"
 msgstr "Zeit kann nicht gesendet werden"
 
-#: extension.js:346
+#: extension.js:364
 msgid "Error sending time"
 msgstr "Fehler beim Senden der Zeit"
 
-#: extension.js:367
+#: extension.js:385
 msgid "Unable to open report"
 msgstr "Bericht kann nicht geöffnet werden"
 
-#: extension.js:378
+#: extension.js:396
 msgid "Extension not found"
 msgstr "Erweiterung nicht gefunden"
 
-#: extension.js:382
+#: extension.js:400
 msgid "Unable to open preferences"
 msgstr "Einstellungen können nicht geöffnet werden"
 
@@ -327,18 +328,42 @@ msgid "Access Token"
 msgstr "Zugriffstoken"
 
 #: prefs.js:43
+msgid "Timer Configuration"
+msgstr "Timer-Konfiguration"
+
+#: prefs.js:44
+msgid "Configure timer behavior after screen lock, logout or restart"
+msgstr "Timer-Verhalten nach Bildschirmsperre, Abmeldung oder Neustart konfigurieren"
+
+#: prefs.js:50
+msgid "Resume automatically after unlock"
+msgstr "Automatisch nach Entsperrung fortsetzen"
+
+#: prefs.js:51
+msgid "Automatically resume the timer when the screen is unlocked"
+msgstr "Den Timer automatisch fortsetzen, wenn der Bildschirm entsperrt wird"
+
+#: prefs.js:58
+msgid "Count elapsed time when locked"
+msgstr "Verstrichene Zeit bei Sperre zählen"
+
+#: prefs.js:59
+msgid "Count time elapsed during lock, logout or shutdown"
+msgstr "Verstrichene Zeit während Sperre, Abmeldung oder Herunterfahren zählen"
+
+#: prefs.js:78
 msgid "Reports Configuration"
 msgstr "Berichtskonfiguration"
 
-#: prefs.js:44
+#: prefs.js:79
 msgid "Configure filters for monthly reports"
 msgstr "Filter für monatliche Berichte konfigurieren"
 
-#: prefs.js:50
+#: prefs.js:85
 msgid "Tags included in reports"
 msgstr "In Berichten enthaltene Tags"
 
-#: prefs.js:60
+#: prefs.js:95
 msgid ""
 "Leave empty to display all tags.\n"
 "Otherwise, enter a comma-separated list of tags or regular expressions.\n"
@@ -359,11 +384,11 @@ msgstr ""
 "\n"
 "Issues ohne diese Tags erscheinen als \"Andere\" in den Berichten."
 
-#: prefs.js:78
+#: prefs.js:113
 msgid "Information"
 msgstr "Informationen"
 
-#: prefs.js:83
+#: prefs.js:118
 msgid ""
 "To create a personal access token:\n"
 "1. Go to your GitLab profile\n"
@@ -376,3 +401,15 @@ msgstr ""
 "2. Einstellungen → Zugriffstoken\n"
 "3. Erstellen Sie ein neues Token mit \"api\"-Berechtigungen\n"
 "4. Kopieren Sie das Token und fügen Sie es oben ein"
+
+#~ msgid "Configure timer behavior"
+#~ msgstr "Timer-Verhalten konfigurieren"
+
+#~ msgid "Pause when screen is locked"
+#~ msgstr "Bei Bildschirmsperre pausieren"
+
+#~ msgid "Automatically pause the timer when the screen is locked"
+#~ msgstr "Den Timer automatisch pausieren, wenn der Bildschirm gesperrt wird"
+
+#~ msgid "Resume when screen is unlocked"
+#~ msgstr "Bei Entsperrung fortsetzen"
