@@ -8,6 +8,8 @@ import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 
+import {AvatarLoader} from './avatarLoader.js';
+
 export const ReportDialog = GObject.registerClass(
 class ReportDialog extends ModalDialog.ModalDialog {
     _init(settings, gettext, preselectedProject = null) {
@@ -16,12 +18,12 @@ class ReportDialog extends ModalDialog.ModalDialog {
         this._settings = settings;
         this._ = gettext;
         this._httpSession = new Soup.Session();
+        this._avatarLoader = new AvatarLoader(settings, this._httpSession);
         this._projects = [];
         this._selectedProject = null;
         this._preselectedProject = preselectedProject;
         this._reportData = null;
         this._projectSelectorOpen = false;
-        this._projectAvatars = new Map(); // Cache for project avatars
 
         // Initialize date to current month
         const now = new Date();
@@ -359,9 +361,9 @@ class ReportDialog extends ModalDialog.ModalDialog {
                 style: 'width: 24px; height: 24px; border-radius: 3px;'
             });
 
-            // Load project avatar
+            // Load project avatar using shared loader
             const namespace = project.namespace || null;
-            this._loadProjectAvatar(project.id, namespace, icon);
+            this._avatarLoader.loadProjectAvatar(project.id, namespace, icon);
 
             box.add_child(icon);
 
@@ -398,9 +400,10 @@ class ReportDialog extends ModalDialog.ModalDialog {
         this._selectedProject = project;
         this._projectDropdownLabel.text = project.path_with_namespace;
 
-        // Update icon if available
-        if (gicon) {
-            this._projectIcon.set_gicon(gicon);
+        // Update icon if available (use passed gicon or try cache)
+        const cachedIcon = gicon || this._avatarLoader.getCachedAvatar(project.id);
+        if (cachedIcon) {
+            this._projectIcon.set_gicon(cachedIcon);
         } else {
             this._projectIcon.icon_name = 'folder-symbolic';
         }
@@ -411,192 +414,6 @@ class ReportDialog extends ModalDialog.ModalDialog {
 
         // Load report data
         this._loadReportData();
-    }
-
-    _loadProjectAvatar(projectId, namespace, iconWidget) {
-        const cacheKey = `project-${projectId}`;
-
-        // Check cache
-        if (this._projectAvatars.has(cacheKey)) {
-            const gicon = this._projectAvatars.get(cacheKey);
-            if (gicon) {
-                iconWidget.set_gicon(gicon);
-            }
-            return;
-        }
-
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        // Use GitLab API to get project avatar
-        const apiUrl = `${url}/api/v4/projects/${projectId}/avatar`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            iconWidget.set_gicon(gicon);
-                        } else if (namespace) {
-                            // Fallback: try to load group/user avatar
-                            this._loadNamespaceAvatar(namespace, iconWidget, cacheKey);
-                        } else {
-                            // No avatar available, keep default icon
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Report: Failed to load project avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Report: Error creating avatar request:', e.message);
-        }
-    }
-
-    _loadNamespaceAvatar(namespace, iconWidget, cacheKey) {
-        // Determine if it's a group or user
-        const isUser = namespace.kind === 'user';
-
-        if (isUser) {
-            this._loadUserAvatar(namespace.id, iconWidget, cacheKey);
-        } else {
-            this._loadGroupAvatar(namespace.id, iconWidget, cacheKey);
-        }
-    }
-
-    _loadUserAvatar(userId, iconWidget, cacheKey) {
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        const apiUrl = `${url}/api/v4/users/${userId}`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200) {
-                            const decoder = new TextDecoder('utf-8');
-                            const response = decoder.decode(bytes.get_data());
-                            const user = JSON.parse(response);
-
-                            if (user.avatar_url) {
-                                this._downloadAvatar(user.avatar_url, iconWidget, cacheKey);
-                            } else {
-                                this._projectAvatars.set(cacheKey, null);
-                            }
-                        } else {
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Report: Failed to load user info:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Report: Error creating user info request:', e.message);
-        }
-    }
-
-    _downloadAvatar(avatarUrl, iconWidget, cacheKey) {
-        let fullUrl = avatarUrl;
-        if (avatarUrl.startsWith('/')) {
-            const gitlabUrl = this._settings.get_string('gitlab-url');
-            fullUrl = gitlabUrl + avatarUrl;
-        }
-
-        const token = this._settings.get_string('gitlab-token');
-        if (fullUrl.includes('/uploads/')) {
-            const separator = fullUrl.includes('?') ? '&' : '?';
-            fullUrl = `${fullUrl}${separator}private_token=${token}`;
-        }
-
-        try {
-            const message = Soup.Message.new('GET', fullUrl);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            // Check if widget still exists before accessing it
-                            if (!iconWidget.is_finalized()) {
-                                iconWidget.set_gicon(gicon);
-                            }
-                        } else {
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Report: Failed to download avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Report: Error downloading avatar:', e.message);
-        }
-    }
-
-    _loadGroupAvatar(groupId, iconWidget, cacheKey) {
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        const apiUrl = `${url}/api/v4/groups/${groupId}/avatar`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            iconWidget.set_gicon(gicon);
-                        } else {
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Report: Failed to load group avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Report: Error creating group avatar request:', e.message);
-        }
     }
 
     _loadReportData() {

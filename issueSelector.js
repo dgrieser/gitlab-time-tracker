@@ -3,9 +3,10 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup';
-import Gio from 'gi://Gio';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+import {AvatarLoader} from './avatarLoader.js';
 
 export const IssueSelectorDialog = GObject.registerClass(
 class IssueSelectorDialog extends ModalDialog.ModalDialog {
@@ -16,11 +17,11 @@ class IssueSelectorDialog extends ModalDialog.ModalDialog {
         this._ = gettext;
         this._onSelected = onSelected;
         this._httpSession = new Soup.Session();
+        this._avatarLoader = new AvatarLoader(settings, this._httpSession);
         this._projects = [];
         this._issues = [];
         this._allIssues = [];
         this._selectedProject = null;
-        this._projectAvatars = new Map(); // Cache for project avatars
 
         this._buildUI();
         this._loadProjects();
@@ -223,9 +224,9 @@ class IssueSelectorDialog extends ModalDialog.ModalDialog {
                 style: 'width: 24px; height: 24px; border-radius: 3px;'
             });
 
-            // Utiliser l'API GitLab pour récupérer l'avatar du projet avec fallback vers le groupe/user
+            // Load project avatar using shared loader
             const namespace = project.namespace || null;
-            this._loadProjectAvatar(project.id, namespace, icon);
+            this._avatarLoader.loadProjectAvatar(project.id, namespace, icon);
 
             box.add_child(icon);
 
@@ -375,195 +376,5 @@ class IssueSelectorDialog extends ModalDialog.ModalDialog {
 
         this._onSelected(this._selectedProject, this._selectedIssue);
         this.close();
-    }
-
-    _loadProjectAvatar(projectId, namespace, iconWidget) {
-        const cacheKey = `project-${projectId}`;
-
-        // Vérifier le cache
-        if (this._projectAvatars.has(cacheKey)) {
-            const gicon = this._projectAvatars.get(cacheKey);
-            if (gicon) {
-                iconWidget.set_gicon(gicon);
-            }
-            return;
-        }
-
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        // Utiliser l'API GitLab pour récupérer l'avatar du projet
-        const apiUrl = `${url}/api/v4/projects/${projectId}/avatar`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            iconWidget.set_gicon(gicon);
-                        } else if (namespace) {
-                            // Fallback: essayer de charger l'avatar du groupe ou de l'utilisateur
-                            this._loadNamespaceAvatar(namespace, iconWidget, cacheKey);
-                        } else {
-                            // Pas d'avatar disponible, garder l'icône par défaut
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Timer: Failed to load project avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Timer: Error creating avatar request:', e.message);
-        }
-    }
-
-    _loadNamespaceAvatar(namespace, iconWidget, cacheKey) {
-        // Déterminer si c'est un groupe ou un utilisateur
-        // Dans GitLab, namespace.kind === 'user' ou 'group'
-        const isUser = namespace.kind === 'user';
-
-        if (isUser) {
-            this._loadUserAvatar(namespace.id, iconWidget, cacheKey);
-        } else {
-            this._loadGroupAvatar(namespace.id, iconWidget, cacheKey);
-        }
-    }
-
-    _loadUserAvatar(userId, iconWidget, cacheKey) {
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        // Récupérer d'abord les infos utilisateur pour obtenir l'avatar_url
-        const apiUrl = `${url}/api/v4/users/${userId}`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200) {
-                            const decoder = new TextDecoder('utf-8');
-                            const response = decoder.decode(bytes.get_data());
-                            const user = JSON.parse(response);
-
-                            // Télécharger l'avatar si l'URL existe
-                            if (user.avatar_url) {
-                                this._downloadAvatar(user.avatar_url, iconWidget, cacheKey);
-                            } else {
-                                this._projectAvatars.set(cacheKey, null);
-                            }
-                        } else {
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Timer: Failed to load user info:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Timer: Error creating user info request:', e.message);
-        }
-    }
-
-    _downloadAvatar(avatarUrl, iconWidget, cacheKey) {
-        // Convertir les URLs relatives en URLs absolues
-        let fullUrl = avatarUrl;
-        if (avatarUrl.startsWith('/')) {
-            const gitlabUrl = this._settings.get_string('gitlab-url');
-            fullUrl = gitlabUrl + avatarUrl;
-        }
-
-        // Ajouter le token pour les avatars privés
-        const token = this._settings.get_string('gitlab-token');
-        if (fullUrl.includes('/uploads/')) {
-            const separator = fullUrl.includes('?') ? '&' : '?';
-            fullUrl = `${fullUrl}${separator}private_token=${token}`;
-        }
-
-        try {
-            const message = Soup.Message.new('GET', fullUrl);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            iconWidget.set_gicon(gicon);
-                        } else {
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Timer: Failed to download avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Timer: Error downloading avatar:', e.message);
-        }
-    }
-
-    _loadGroupAvatar(groupId, iconWidget, cacheKey) {
-        const url = this._settings.get_string('gitlab-url');
-        const token = this._settings.get_string('gitlab-token');
-
-        // Utiliser l'API GitLab pour récupérer l'avatar du groupe
-        const apiUrl = `${url}/api/v4/groups/${groupId}/avatar`;
-
-        try {
-            const message = Soup.Message.new('GET', apiUrl);
-            message.request_headers.append('PRIVATE-TOKEN', token);
-
-            this._httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (session, result) => {
-                    try {
-                        const bytes = session.send_and_read_finish(result);
-                        if (message.status_code === 200 && bytes && bytes.get_size() > 0) {
-                            const gicon = Gio.BytesIcon.new(bytes);
-                            this._projectAvatars.set(cacheKey, gicon);
-                            iconWidget.set_gicon(gicon);
-                        } else {
-                            // Pas d'avatar de groupe non plus, garder l'icône par défaut
-                            this._projectAvatars.set(cacheKey, null);
-                        }
-                    } catch (e) {
-                        this._projectAvatars.set(cacheKey, null);
-                        log('GitLab Timer: Failed to load group avatar:', e.message);
-                    }
-                }
-            );
-        } catch (e) {
-            this._projectAvatars.set(cacheKey, null);
-            log('GitLab Timer: Error creating group avatar request:', e.message);
-        }
     }
 });
