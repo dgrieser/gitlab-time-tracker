@@ -30,6 +30,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
         this._timerId = null;
         this._selectedProject = null;
         this._selectedIssue = null;
+        this._timerStartTimestamp = null; // Timestamp when timer was started
 
         // Create icon
         this._icon = new St.Icon({
@@ -40,6 +41,12 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
 
         // Build menu
         this._buildMenu();
+
+        // Restore timer state if any (after menu is built)
+        this._restoreTimerState();
+        if (this._timerRunning) {
+            this._updateUIAfterRestore();
+        }
     }
 
     _getIconGicon(iconName) {
@@ -231,6 +238,7 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
 
         this._timerRunning = true;
         this._timerPaused = false;
+        this._timerStartTimestamp = Math.floor(Date.now() / 1000) - this._elapsedSeconds;
 
         this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
             if (!this._timerPaused) {
@@ -385,7 +393,100 @@ class GitLabIssuesIndicator extends PanelMenu.Button {
         }
     }
 
+    _saveTimerState() {
+        if (this._timerRunning) {
+            const state = {
+                running: this._timerRunning,
+                paused: this._timerPaused,
+                startTimestamp: this._timerStartTimestamp,
+                elapsedBeforePause: this._timerPaused ? this._elapsedSeconds : 0,
+                project: this._selectedProject ? {
+                    id: this._selectedProject.id,
+                    path_with_namespace: this._selectedProject.path_with_namespace,
+                    name: this._selectedProject.name,
+                    avatar_url: this._selectedProject.avatar_url || null,
+                    web_url: this._selectedProject.web_url || null
+                } : null,
+                issue: this._selectedIssue ? {
+                    id: this._selectedIssue.id,
+                    iid: this._selectedIssue.iid,
+                    title: this._selectedIssue.title,
+                    project_id: this._selectedIssue.project_id,
+                    web_url: this._selectedIssue.web_url || null
+                } : null
+            };
+            this._settings.set_string('timer-state', JSON.stringify(state));
+            log('GitLab Timer: Saved timer state');
+        } else {
+            this._settings.set_string('timer-state', '{}');
+        }
+    }
+
+    _restoreTimerState() {
+        try {
+            const stateJson = this._settings.get_string('timer-state');
+            if (!stateJson || stateJson === '{}') return;
+
+            const state = JSON.parse(stateJson);
+            if (!state.running) return;
+
+            log('GitLab Timer: Restoring timer state...');
+
+            this._selectedProject = state.project;
+            this._selectedIssue = state.issue;
+            this._timerPaused = state.paused;
+            this._timerRunning = true;
+            this._timerStartTimestamp = state.startTimestamp;
+
+            if (state.paused) {
+                // If paused, restore the elapsed seconds directly
+                this._elapsedSeconds = state.elapsedBeforePause;
+            } else {
+                // If running, calculate elapsed time since start
+                const now = Math.floor(Date.now() / 1000);
+                this._elapsedSeconds = now - state.startTimestamp;
+            }
+
+            // Restart the timer interval
+            this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+                if (!this._timerPaused) {
+                    this._elapsedSeconds++;
+                }
+                this._updateTimerDisplay();
+                return GLib.SOURCE_CONTINUE;
+            });
+
+            // Clear saved state after successful restore
+            this._settings.set_string('timer-state', '{}');
+
+            log(`GitLab Timer: Timer restored with ${this._elapsedSeconds} seconds`);
+        } catch (e) {
+            log(`GitLab Timer: Error restoring timer state: ${e.message}`);
+            this._settings.set_string('timer-state', '{}');
+        }
+    }
+
+    _updateUIAfterRestore() {
+        // Update timer display
+        this._updateTimerDisplay();
+        // Update button visibility
+        this._updateButtonVisibility();
+        // Update icon
+        this._updateIcon();
+        // Update pause button text if paused
+        if (this._timerPaused) {
+            this._pauseButton.label.text = this._('Resume');
+        }
+        // Update issue label
+        if (this._selectedIssue) {
+            this._issueLabel.label.text = `#${this._selectedIssue.iid} - ${this._selectedIssue.title}`;
+        }
+    }
+
     destroy() {
+        // Save timer state before destroying
+        this._saveTimerState();
+
         if (this._timerId) {
             GLib.source_remove(this._timerId);
         }
