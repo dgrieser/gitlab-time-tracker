@@ -1,6 +1,6 @@
 {
   "name": "Gitlab Time Tracking",
-  "description": "Track time spent on GitLab issues with a convenient system tray timer",
+  "description": "Track time spent on GitLab issues with a convenient system tray timer.\n\nThis extension is not affiliated, funded, or in any way associated with GitLab.",
   "uuid": "gitlab-time-tracker@gecka.nc",
   "shell-version": [
     "46",
