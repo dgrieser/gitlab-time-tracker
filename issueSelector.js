@@ -194,7 +194,6 @@ class IssueSelectorDialog extends ModalDialog.ModalDialog {
                                          p.path_with_namespace.toLowerCase().includes(searchText))
             : this._projects;
 
-        // Tri alphabétique par path_with_namespace
         filteredProjects = filteredProjects.sort((a, b) =>
             a.path_with_namespace.localeCompare(b.path_with_namespace)
         );
