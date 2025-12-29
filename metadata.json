@@ -12,9 +12,5 @@
   "version-name": "1.0.0",
   "url": "https://github.com/Gecka-Apps/gitlab-time-tracker",
   "settings-schema": "org.gnome.shell.extensions.gitlab-time-tracker",
-  "original-authors": [
-    "Gecka <contact@gecka.nc>"
-  ],
-  "license": "GPL-3.0-or-later",
   "gettext-domain": "gitlab-time-tracker@gecka.nc"
 }
