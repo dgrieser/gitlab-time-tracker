@@ -56,6 +56,7 @@ build: clean
 		--extra-source=icons \
 		--extra-source=extension.js \
 		--extra-source=issueSelector.js \
+		--extra-source=avatarLoader.js \
 		--extra-source=reportDialog.js \
 		--extra-source=prefs.js \
 		--extra-source=stylesheet.css \
